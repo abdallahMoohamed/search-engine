@@ -13,3 +13,19 @@ positional_index = {'antony': [3, {0: [0], 1: [0], 5: [0]}],
     'to': [4, {6: [5], 7: [5], 8: [4], 9: [4]}], 
     'tread': [4, {6: [6], 7: [6], 8: [5], 9: [5]}], 
     'where': [4, {6: [7], 7: [7], 8: [6], 9: [6]}]}
+
+query = input("Enter Word to search for : ")
+finalList = [[] for i in range (10)]
+
+for word in query.split():
+    for key in positional_index[word][1].keys():
+        if finalList[key-1] != positional_index[word][1][key][0] -1:
+            finalList[key-1].append(positional_index[word][1][key][0])
+        else:
+            finalList[key-1].append(positional_index[word][1][key][0])
+
+#print(finalList)
+
+for position , list in enumerate(finalList , start = 1):
+    if len(list) == len(query.split()):
+        print(position)
