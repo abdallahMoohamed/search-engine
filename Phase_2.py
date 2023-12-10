@@ -12,9 +12,12 @@ for document in document_of_terms:
             else:
                 positional_index[term][1][document_number]=[positional]
         else:
-            positional_index[term]=[]
-            positional_index[term].append(1)
-            positional_index[term].append({})
-            positional_index[term][1][document_number] = [positional]
+            positional_index[term]=[] # 'antony': []
+            positional_index[term].append(1) # 'antony':[1]
+            positional_index[term].append({}) # 'antony':[1, { }]
+            positional_index[term][1][document_number] = [positional] # 'antony':[1, { 0: [0] }]
     document_number += 1
+
+print(positional_index)
+
 

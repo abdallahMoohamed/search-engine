@@ -11,10 +11,11 @@ for doc in documents:
     all_words.append(word)
   
 def get_term_freq(doc):
-  words_found = dict.fromkeys(all_words,0)
+  term_freq = dict.fromkeys(all_words,0)
   for word in doc:
-    words_found[word] +=1 
-  return words_found
+    term_freq[word] +=1 
+  return term_freq
+
 
 term_freq = pd.DataFrame(get_term_freq(documents[0]).values() , index = get_term_freq(documents[0]).keys())
 for i in range(1, len(documents)):
@@ -33,7 +34,7 @@ for i in range(1, len(documents)+1):
 
 
 
-########################## IDF and TF IDF ##########################
+######################### IDF and TF IDF ##########################
 tfd = pd.DataFrame(columns=['freq','idf'])
 for i in range(len(term_freq)):
   frequency = term_freq.iloc[i].values.sum() # type: ignore
@@ -70,7 +71,7 @@ def get_normalized(col, x):
 for column in term_freq_mult_tfd.columns:
   normalized_term_freq_idf[column] = term_freq_mult_tfd[column].apply(lambda x: get_normalized(column,x))
 
-################################ query details ################################
+################################### query details ###################################
 def get_w_tf(x):
   try:
     return math.log10(x)+1
@@ -78,30 +79,56 @@ def get_w_tf(x):
     return 0
   
 q = 'antony brutus'
-query = pd.DataFrame(index=normalized_term_freq_idf.index)
-query['tf'] = [1 if x in q.split() else 0 for x in list(normalized_term_freq_idf.index)]
+query = pd.DataFrame(index=term_freq.index)
+array = [] #[1 if x in q.split() else 0 for x in list(term_freq.index)]
+for x in list(term_freq.index):
+  if x in q.split():
+    array.append(1)
+  else:
+    array.append(0)
+
+query['tf'] = array 
 query['w_tf'] = query['tf'].apply(lambda x:get_w_tf(x))
+# print(query)   ########## DONE
+
+# multiply every column in normalized tf.idf with query['w_tf] that's column also
 product = normalized_term_freq_idf.multiply(query['w_tf'],axis=0)
+# print(f'\n{normalized_term_freq_idf}\n')
+# print(query['w_tf'])
+# print(f'\n{product}') 
+ 
 query['idf'] = tfd['idf'] * query['w_tf']
+# print('\n',tfd)
+# print('\n',query)
+
 query['tf_idf'] = query['w_tf'] * query['idf']
 query['norm'] = 0
+# print('\n',(query)) 
+
+idf_values = np.array(query['idf'].values)
+normalization_factor = math.sqrt(np.sum(idf_values**2))
+# query_length = math.sqrt()
 for i in range(len(query)):
-  query['norm'].iloc[i] = float(query['idf'].iloc[i]) / math.sqrt(sum(query['idf'].values**2)) # type: ignore
-print(query['idf'].loc[q.split()])
-product2 = product.multiply(query['norm'],axis=0)
+  query['norm'].iloc[i] = float(query['idf'].iloc[i]) / normalization_factor  
+print(query) ##### DONE
+
+product2 = normalized_term_freq_idf.multiply(query['w_tf'],axis=0).multiply(query['norm'],axis=0)
+print(product2)
 
 scores = {}
-for col in product2.columns:
-  if 0 in product2[col].loc[q.split()].values:
+for col in product2.columns: 
+  print(q.split())
+  print('product2[col].loc[q.split()].values :',product2[col].loc[q.split()].values)
+  if 0 in product2[col].loc[q.split()].values: # q.split = ['antony','brutus']
     pass
   else:
     scores[col] = product2[col].sum()
-# print(scores) # cosine similarity 
+print(scores) # cosine similarity 
 
 products_result = product2[list(scores.keys())].loc[q.split()]
-# print(products_result)
+print(products_result)
 # print(products_result.sum())
-
+print(scores)
 scores_sort = sorted(scores.items(), key = lambda x:x[1], reverse=True)
 print(scores_sort)
 

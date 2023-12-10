@@ -15,6 +15,7 @@ stop_words.remove('where')
 files_name = natsorted(os.listdir('files'))
 
 document_of_terms = []
+all_words = []
 for files in files_name:
     with open(f'files/{files}','r') as f:
         document = f.read()
@@ -22,7 +23,7 @@ for files in files_name:
     terms = []
     for word in tokenized_document:
         if word not in stop_words:
+            all_words.append(word)
             terms.append(word)
     document_of_terms.append(terms)
-
 
